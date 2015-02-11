@@ -1,0 +1,20 @@
+[package]
+name = "hex2d-dpcext"
+version = "0.0.1"
+authors = [ "Dawid Ciężarkiewicz <dawid@dpc.pw>" ]
+description = "dpc's hacky extensions to hex2d-rs library"
+documentation = "http://dpc.github.io/hex2d-dpcext-rs/"
+repository = "https://github.com/dpc/hex2d-dpcext-rs"
+homepage = "https://github.com/dpc/hex2d-dpcext-rs"
+readme = "README.md"
+keywords = ["game", "map", "hex"]
+license = "MIT"
+
+[lib]
+name = "hex2d-dpcext"
+path = "src/lib.rs"
+
+[dependencies]
+num = "*"
+rand = "*"
+hex2d = "*"
