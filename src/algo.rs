@@ -144,9 +144,9 @@ pub mod los {
     ) where
         I : SignedInt+FromPrimitive+Integer,
         FOpaqueness : Fn(Coordinate<I>) -> I,
-        FVisible : FnMut(Coordinate<I>)
+        FVisible : FnMut(Coordinate<I>, I)
         {
-            visible(p);
+            visible(p, light);
 
             let mut light = light;
             let opaq = opaqueness(p);
@@ -161,8 +161,8 @@ pub mod los {
                 (Some(dir), Some(pdir)) => {
 
                     if main_dir == dir {
-                        visible(p + (main_dir + Right));
-                        visible(p + (main_dir + Left));
+                        visible(p + (main_dir + Right), light);
+                        visible(p + (main_dir + Left), light);
                     }
 
                     if dir == pdir {
@@ -173,18 +173,18 @@ pub mod los {
                 },
                 (Some(dir), None) => {
                     if main_dir == dir {
-                        visible(p + (main_dir + Right));
-                        visible(p + (main_dir + Left));
+                        visible(p + (main_dir + Right), light);
+                        visible(p + (main_dir + Left), light);
                         vec!(dir, dir + Left, dir + Right)
                     } else {
-                        visible((p + main_dir));
+                        visible((p + main_dir), light);
                         vec!(dir, main_dir)
                     }
                 },
                 _ => {
-                    visible(p + main_dir);
-                    visible(p + (main_dir + Left));
-                    visible(p + (main_dir + Right));
+                    visible(p + main_dir, light);
+                    visible(p + (main_dir + Left), light);
+                    visible(p + (main_dir + Right), light);
                     vec!(main_dir, main_dir + Left, main_dir + Right)
                 }
             };
@@ -214,7 +214,7 @@ pub mod los {
     ) where
         I : SignedInt+FromPrimitive+Integer,
         FOpaqueness : Fn(Coordinate<I>) -> I,
-        FVisible : FnMut(Coordinate<I>)
+        FVisible : FnMut(Coordinate<I>, I)
         {
             for dir in dirs.iter() {
                 los_rec::<FOpaqueness, FVisible, I>(opaqueness, visible, light, pos, *dir, None, None);
