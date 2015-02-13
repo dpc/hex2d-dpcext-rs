@@ -137,7 +137,8 @@ pub mod los {
         opaqueness : &FOpaqueness,
         visible : &mut FVisible,
         light: I,
-        p : Coordinate<I>,
+        pos : Coordinate<I>,
+        start_dir : Direction,
         main_dir : Direction,
         dir : Option<Direction>,
         pdir : Option<Direction>,
@@ -146,10 +147,10 @@ pub mod los {
         FOpaqueness : Fn(Coordinate<I>) -> I,
         FVisible : FnMut(Coordinate<I>, I)
         {
-            visible(p, light);
+            visible(pos, light);
 
             let mut light = light;
-            let opaq = opaqueness(p);
+            let opaq = opaqueness(pos);
 
             if opaq >= light {
                 return;
@@ -157,14 +158,16 @@ pub mod los {
                 light = light - opaq;
             }
 
+            // Handle long corridors a bit better
+            if main_dir + Left == start_dir || main_dir == start_dir {
+                visible(pos + (main_dir + Left), light);
+            }
+            if main_dir + Right == start_dir || main_dir == start_dir {
+                visible(pos + (main_dir + Right), light);
+            }
+
             let neighbors = match (dir, pdir) {
                 (Some(dir), Some(pdir)) => {
-
-                    if main_dir == dir {
-                        visible(p + (main_dir + Right), light);
-                        visible(p + (main_dir + Left), light);
-                    }
-
                     if dir == pdir {
                         vec!(dir)
                     } else {
@@ -173,27 +176,21 @@ pub mod los {
                 },
                 (Some(dir), None) => {
                     if main_dir == dir {
-                        visible(p + (main_dir + Right), light);
-                        visible(p + (main_dir + Left), light);
                         vec!(dir, dir + Left, dir + Right)
                     } else {
-                        visible((p + main_dir), light);
                         vec!(dir, main_dir)
                     }
                 },
                 _ => {
-                    visible(p + main_dir, light);
-                    visible(p + (main_dir + Left), light);
-                    visible(p + (main_dir + Right), light);
                     vec!(main_dir, main_dir + Left, main_dir + Right)
                 }
             };
 
             for &d in neighbors.iter() {
-                let n = p + d;
+                let npos = pos + d;
                 match dir {
-                    Some(_) => los_rec::<FOpaqueness, FVisible, I>(opaqueness, visible, light, n, d, Some(d), dir),
-                    None => los_rec::<FOpaqueness, FVisible, I>(opaqueness, visible, light, n, main_dir, Some(d), dir),
+                    Some(_) => los_rec::<FOpaqueness, FVisible, I>(opaqueness, visible, light, npos, start_dir, d, Some(d), dir),
+                    None => los_rec::<FOpaqueness, FVisible, I>(opaqueness, visible, light, npos, start_dir, main_dir, Some(d), dir),
                 }
             }
         }
@@ -217,7 +214,7 @@ pub mod los {
         FVisible : FnMut(Coordinate<I>, I)
         {
             for dir in dirs.iter() {
-                los_rec::<FOpaqueness, FVisible, I>(opaqueness, visible, light, pos, *dir, None, None);
+                los_rec::<FOpaqueness, FVisible, I>(opaqueness, visible, light, pos, *dir, *dir, None, None);
             }
         }
 }
