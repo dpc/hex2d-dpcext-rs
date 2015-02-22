@@ -3,16 +3,15 @@ pub mod bfs {
 
     use hex2d::Coordinate;
 
-    use std;
     use std::hash;
     use std::num::{SignedInt, FromPrimitive};
     use num::integer::{Integer};
-    use std::collections::ring_buf::RingBuf;
+    use std::collections::VecDeque;
     use std::collections::HashMap;
     use std::collections::hash_map::Entry::{Occupied,Vacant};
 
     struct Visited<I = i32>
-        where I : SignedInt+hash::Hash<std::collections::hash_map::Hasher> {
+        where I : SignedInt+hash::Hash {
         prev : Coordinate<I>,
         dist : u32,
     }
@@ -22,26 +21,26 @@ pub mod bfs {
     /// Use BFS to find closest (in walk steps) Coordinates that satisfy `is_dest` and can be
     /// reached with a walk through coordinates for which `can_pass` returns true.
     pub struct Traverser<FCanPass, FIsDest, I = i32> where
-        I : SignedInt+hash::Hash<std::collections::hash_map::Hasher>,
+        I : SignedInt+hash::Hash,
         FCanPass : Fn(Coordinate<I>) -> bool,
         FIsDest : Fn(Coordinate<I>) -> bool
     {
         visited : HashMap<Coordinate<I>, Visited<I>>,
-        to_traverse : RingBuf<Coordinate<I>>,
+        to_traverse : VecDeque<Coordinate<I>>,
         can_pass : FCanPass,
         is_dest : FIsDest,
         start : Coordinate<I>,
     }
 
     impl<FCanPass, FIsDest, I> Traverser<FCanPass, FIsDest, I> where
-        I : SignedInt+FromPrimitive+Integer+hash::Hash<std::collections::hash_map::Hasher>,
+        I : SignedInt+FromPrimitive+Integer+hash::Hash,
         FCanPass : Fn(Coordinate<I>) -> bool,
         FIsDest : Fn(Coordinate<I>) -> bool
     {
 
         /// Create a Traverser instance with initial conditions
         pub fn new(can_pass : FCanPass, is_dest : FIsDest, start: Coordinate<I>) -> Traverser<FCanPass, FIsDest, I> {
-            let mut to_traverse = RingBuf::new();
+            let mut to_traverse = VecDeque::new();
             to_traverse.push_back(start);
 
             let mut visited = HashMap::new();

@@ -5,7 +5,6 @@
 
 #![warn(missing_docs)]
 #![feature(core)]
-#![feature(hash)]
 #![feature(std_misc)]
 
 extern crate num;
