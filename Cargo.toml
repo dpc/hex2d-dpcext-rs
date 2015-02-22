@@ -1,6 +1,6 @@
 [package]
 name = "hex2d-dpcext"
-version = "0.0.3"
+version = "0.0.4"
 authors = [ "Dawid Ciężarkiewicz <dawid@dpc.pw>" ]
 description = "dpc's hacky extensions to hex2d-rs library"
 documentation = "http://dpc.github.io/hex2d-dpcext-rs/"
