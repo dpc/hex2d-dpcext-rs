@@ -217,3 +217,93 @@ pub mod los {
             }
         }
 }
+
+/// Combination of tricky Los with straight line checking
+pub mod los2 {
+    use hex2d::Angle::{Left, Right, Forward};
+    use hex2d::Direction;
+    use hex2d::Coordinate;
+    use std::num::{SignedInt, FromPrimitive};
+    use num::integer::{Integer};
+    use std::collections::HashSet;
+    use std::hash::Hash;
+
+    fn los_rec<FOpaqueness, FVisible, I=i32>(
+        opaqueness : &FOpaqueness,
+        visible : &mut FVisible,
+        light: I,
+        start : Coordinate<I>,
+        pos : Coordinate<I>,
+        dir : Direction,
+        visited : &mut HashSet<Coordinate<I>>,
+    ) where
+        I : SignedInt+FromPrimitive+Integer+Hash+Eq,
+        FOpaqueness : Fn(Coordinate<I>) -> I,
+        FVisible : FnMut(Coordinate<I>, I)
+        {
+            if visited.contains(&pos) {
+                return;
+            } else {
+                visited.insert(pos);
+            }
+
+            let mut opaq_sum = FromPrimitive::from_i8(0).unwrap();
+            let mut last = pos;
+            let pos_opaq = opaqueness(pos);
+            let opaq_limit_still_visible = FromPrimitive::from_i8(5).unwrap();
+
+            start.for_each_in_line_to(pos, |c| {
+                let opaq = opaqueness(c);
+                opaq_sum = opaq_sum + opaq;
+
+                if opaq_sum >= light {
+                    last = c;
+                    return;
+                }
+            });
+
+            if light > opaq_sum {
+                visible(pos, light - opaq_sum);
+            } else {
+                if last == pos || pos_opaq > opaq_limit_still_visible {
+                    visible(pos, light - light);
+                }
+                return;
+            }
+
+            let neighbors = vec!(Forward, Left, Right);
+
+            for &a in neighbors.iter() {
+                let npos = pos + (dir + a);
+                los_rec::<FOpaqueness, FVisible, I>(
+                    opaqueness, visible, light, start, npos, dir, visited
+                    );
+            }
+        }
+
+
+    /// Starting from `pos` in direction `dir`, call `visible` for each visible Coordinate.
+    ///
+    /// Use `light` as starting range of the LoS. For each visible Coordinate, the value returned
+    /// by `opaqueness` will be subtracted from `light` to check if the LoS should finish due to
+    /// "lack of visibility". `opaqueness` should typically return 1 for fully transparent
+    /// Coordinates, and anything bigger than initial `light` for fully opaque Coordinates.
+    pub fn los<FOpaqueness, FVisible, I=i32>(
+        opaqueness : &FOpaqueness,
+        visible : &mut FVisible,
+        light: I,
+        pos : Coordinate<I>,
+        dirs : &[Direction],
+    ) where
+        I : SignedInt+FromPrimitive+Integer+Hash+Eq,
+        FOpaqueness : Fn(Coordinate<I>) -> I,
+        FVisible : FnMut(Coordinate<I>, I)
+        {
+            for dir in dirs.iter() {
+                let mut visited = HashSet::new();
+                los_rec::<FOpaqueness, FVisible, I>(
+                    opaqueness, visible, light, pos, pos, *dir, &mut visited
+                    );
+            }
+        }
+}
