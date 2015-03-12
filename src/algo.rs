@@ -265,7 +265,7 @@ pub mod los2 {
             if light > opaq_sum {
                 visible(pos, light - opaq_sum);
             } else {
-                if last == pos || pos_opaq > opaq_limit_still_visible {
+                if last == pos && pos_opaq > opaq_limit_still_visible {
                     visible(pos, light - light);
                 }
                 return;
