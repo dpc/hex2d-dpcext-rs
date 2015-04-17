@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["bfs","Breadth First Search"],["los","Very tricky, but (hopefully) good enough, recursive LoS algorithm"],["los2","Combination of tricky Los with straight line checking"]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["los","Starting from `pos` in direction `dir`, call `visible` for each visible Coordinate."]]});
