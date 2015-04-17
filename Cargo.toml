@@ -1,5 +1,5 @@
 [package]
-name = "hex2d-dpcext"
+name = "hex2d_dpcext"
 version = "0.0.5"
 authors = [ "Dawid Ciężarkiewicz <dpc@dpc.pw>" ]
 description = "dpc's hacky extensions to hex2d-rs library"
@@ -11,7 +11,7 @@ keywords = ["game", "map", "hex"]
 license = "MIT"
 
 [lib]
-name = "hex2d-dpcext"
+name = "hex2d_dpcext"
 path = "src/lib.rs"
 
 [dependencies]

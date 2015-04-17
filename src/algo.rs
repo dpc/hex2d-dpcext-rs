@@ -2,26 +2,27 @@
 pub mod bfs {
 
     use hex2d::Coordinate;
+    use hex2d;
 
     use std::hash;
-    use std::num::{SignedInt, FromPrimitive};
-    use num::integer::{Integer};
     use std::collections::VecDeque;
     use std::collections::HashMap;
     use std::collections::hash_map::Entry::{Occupied,Vacant};
 
     struct Visited<I = i32>
-        where I : SignedInt+hash::Hash {
-        prev : Coordinate<I>,
-        dist : u32,
-    }
+        where I : hex2d::Integer
+        {
+            prev : Coordinate<I>,
+            dist : u32,
+        }
 
     /// Breadth First Search
     ///
     /// Use BFS to find closest (in walk steps) Coordinates that satisfy `is_dest` and can be
     /// reached with a walk through coordinates for which `can_pass` returns true.
     pub struct Traverser<FCanPass, FIsDest, I = i32> where
-        I : SignedInt+hash::Hash,
+        I : hex2d::Integer,
+        I : hash::Hash,
         FCanPass : Fn(Coordinate<I>) -> bool,
         FIsDest : Fn(Coordinate<I>) -> bool
     {
@@ -33,7 +34,8 @@ pub mod bfs {
     }
 
     impl<FCanPass, FIsDest, I> Traverser<FCanPass, FIsDest, I> where
-        I : SignedInt+FromPrimitive+Integer+hash::Hash,
+        I : hex2d::Integer,
+        I : hash::Hash,
         FCanPass : Fn(Coordinate<I>) -> bool,
         FIsDest : Fn(Coordinate<I>) -> bool
     {
@@ -126,11 +128,11 @@ pub mod bfs {
 
 /// Very tricky, but (hopefully) good enough, recursive LoS algorithm
 pub mod los {
+    use hex2d;
     use hex2d::Angle::{Left,Right};
+
     use hex2d::Direction;
     use hex2d::Coordinate;
-    use std::num::{SignedInt, FromPrimitive};
-    use num::integer::{Integer};
 
     fn los_rec<FOpaqueness, FVisible, I=i32>(
         opaqueness : &FOpaqueness,
@@ -142,11 +144,10 @@ pub mod los {
         dir : Option<Direction>,
         pdir : Option<Direction>,
     ) where
-        I : SignedInt+FromPrimitive+Integer,
+        I : hex2d::Integer,
         FOpaqueness : Fn(Coordinate<I>) -> I,
         FVisible : FnMut(Coordinate<I>, I)
         {
-            visible(pos, light);
 
             let mut light = light;
             let opaq = opaqueness(pos);
@@ -157,13 +158,16 @@ pub mod los {
                 light = light - opaq;
             }
 
+            visible(pos, light);
+
+            /*
             // Handle long corridors a bit better
             if main_dir + Left == start_dir || main_dir == start_dir {
                 visible(pos + (main_dir + Left), light);
             }
             if main_dir + Right == start_dir || main_dir == start_dir {
                 visible(pos + (main_dir + Right), light);
-            }
+            }*/
 
             let neighbors = match (dir, pdir) {
                 (Some(dir), Some(pdir)) => {
@@ -208,7 +212,7 @@ pub mod los {
         pos : Coordinate<I>,
         dirs : &[Direction],
     ) where
-        I : SignedInt+FromPrimitive+Integer,
+        I : hex2d::Integer,
         FOpaqueness : Fn(Coordinate<I>) -> I,
         FVisible : FnMut(Coordinate<I>, I)
         {
@@ -220,13 +224,14 @@ pub mod los {
 
 /// Combination of tricky Los with straight line checking
 pub mod los2 {
+    use hex2d;
     use hex2d::Angle::{Left, Right, Forward};
     use hex2d::Direction;
     use hex2d::Coordinate;
-    use std::num::{SignedInt, FromPrimitive};
-    use num::integer::{Integer};
+    use num::{FromPrimitive};
     use std::collections::HashSet;
-    use std::hash::Hash;
+    use std::hash;
+    use std::ops::{Add};
 
     fn los_rec<FOpaqueness, FVisible, I=i32>(
         opaqueness : &FOpaqueness,
@@ -237,7 +242,9 @@ pub mod los2 {
         dir : Direction,
         visited : &mut HashSet<Coordinate<I>>,
     ) where
-        I : SignedInt+FromPrimitive+Integer+Hash+Eq,
+        I : hex2d::Integer,
+        I : hash::Hash+Eq,
+        for <'a> &'a I: Add<&'a I, Output = I>,
         FOpaqueness : Fn(Coordinate<I>) -> I,
         FVisible : FnMut(Coordinate<I>, I)
         {
@@ -295,7 +302,9 @@ pub mod los2 {
         pos : Coordinate<I>,
         dirs : &[Direction],
     ) where
-        I : SignedInt+FromPrimitive+Integer+Hash+Eq,
+        I : hex2d::Integer,
+        I : hash::Hash,
+        for <'a> &'a I: Add<&'a I, Output = I>,
         FOpaqueness : Fn(Coordinate<I>) -> I,
         FVisible : FnMut(Coordinate<I>, I)
         {

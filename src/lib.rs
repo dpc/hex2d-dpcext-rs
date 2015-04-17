@@ -4,8 +4,6 @@
 //! Dpc's hacky extensions
 
 #![warn(missing_docs)]
-#![feature(core)]
-#![feature(std_misc)]
 
 extern crate num;
 extern crate rand;
