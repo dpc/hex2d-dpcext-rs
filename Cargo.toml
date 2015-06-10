@@ -1,5 +1,5 @@
 [package]
-name = "hex2d_dpcext"
+name = "hex2d-dpcext"
 version = "0.0.6"
 authors = [ "Dawid Ciężarkiewicz <dpc@dpc.pw>" ]
 description = "dpc's hacky extensions to hex2d-rs library"
