@@ -254,27 +254,22 @@ pub mod los2 {
                 visited.insert(pos);
             }
 
-            let mut opaq_sum = FromPrimitive::from_i8(0).unwrap();
-            let mut last = pos;
-            let pos_opaq = opaqueness(pos);
-            let opaq_limit_still_visible = FromPrimitive::from_i8(5).unwrap();
+            let mut opaq_sum : I = FromPrimitive::from_i8(0).unwrap();
+            let mut last = start;
 
-            start.for_each_in_line_to(pos, |c| {
+            for &c in start.line_to(pos).iter() {
                 let opaq = opaqueness(c);
                 opaq_sum = opaq_sum + opaq;
+                last = c;
 
                 if opaq_sum >= light {
-                    last = c;
-                    return;
+                    break;
                 }
-            });
+            };
 
-            if light > opaq_sum {
-                visible(pos, light - opaq_sum);
+            if last == pos {
+                visible(pos, light - light);
             } else {
-                if last == pos && pos_opaq > opaq_limit_still_visible {
-                    visible(pos, light - light);
-                }
                 return;
             }
 
