@@ -160,15 +160,6 @@ pub mod los {
 
             visible(pos, light);
 
-            /*
-            // Handle long corridors a bit better
-            if main_dir + Left == start_dir || main_dir == start_dir {
-                visible(pos + (main_dir + Left), light);
-            }
-            if main_dir + Right == start_dir || main_dir == start_dir {
-                visible(pos + (main_dir + Right), light);
-            }*/
-
             let neighbors = match (dir, pdir) {
                 (Some(dir), Some(pdir)) => {
                     if dir == pdir {
@@ -254,20 +245,28 @@ pub mod los2 {
                 visited.insert(pos);
             }
 
-            let mut opaq_sum : I = FromPrimitive::from_i8(0).unwrap();
-            let mut last = start;
+            let mut opaq_sum1 : I = FromPrimitive::from_i8(0).unwrap();
+            let mut last1 = start;
 
-            for &c in start.line_to(pos).iter() {
-                let opaq = opaqueness(c);
-                opaq_sum = opaq_sum + opaq;
-                last = c;
+            let mut opaq_sum2 : I = FromPrimitive::from_i8(0).unwrap();
+            let mut last2 = start;
 
-                if opaq_sum >= light {
-                    break;
+
+            for &(c1, c2) in start.line_to_with_edge_detection(pos).iter() {
+                if opaq_sum1 < light {
+                    let opaq1 = opaqueness(c1);
+                    opaq_sum1 = opaq_sum1 + opaq1;
+                    last1 = c1;
+                }
+
+                if opaq_sum2 < light {
+                    let opaq2 = opaqueness(c2);
+                    opaq_sum2 = opaq_sum2 + opaq2;
+                    last2 = c2;
                 }
             };
 
-            if last == pos {
+            if last1 == pos || last2 == pos {
                 visible(pos, light - light);
             } else {
                 return;
