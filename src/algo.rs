@@ -251,7 +251,7 @@ pub mod los2 {
             let mut opaq_sum2 : I = FromPrimitive::from_i8(0).unwrap();
             let mut last2 = start;
 
-
+            let mut directly_visible = false;
             for &(c1, c2) in start.line_to_with_edge_detection(pos).iter() {
                 if opaq_sum1 < light {
                     let opaq1 = opaqueness(c1);
@@ -266,9 +266,49 @@ pub mod los2 {
                 }
             };
 
-            if last1 == pos || last2 == pos {
-                visible(pos, light - light);
-            } else {
+            if last1 == pos {
+                visible(pos, light - opaq_sum1);
+                directly_visible = true;
+            } else if  last2 == pos {
+                visible(pos, light - opaq_sum2);
+                directly_visible = true;
+            }
+
+            if !directly_visible {
+
+                let dir_to = start.direction_to_cw(pos).unwrap_or(dir);
+                let neighbors = vec!(Left, Right);
+                for npos in neighbors.iter()
+                    .map(|&rd| dir_to + rd)
+                        .map(|dir| pos + dir) {
+
+                            let mut opaq_sum1 : I = FromPrimitive::from_i8(0).unwrap();
+                            let mut last1 = start;
+
+                            let mut opaq_sum2 : I = FromPrimitive::from_i8(0).unwrap();
+                            let mut last2 = start;
+
+
+                            for &(c1, c2) in start.line_to_with_edge_detection(npos).iter() {
+                                if opaq_sum1 < light {
+                                    let opaq1 = opaqueness(c1);
+                                    opaq_sum1 = opaq_sum1 + opaq1;
+                                    last1 = c1;
+                                }
+
+                                if opaq_sum2 < light {
+                                    let opaq2 = opaqueness(c2);
+                                    opaq_sum2 = opaq_sum2 + opaq2;
+                                    last2 = c2;
+                                }
+                            };
+
+                            if last1 == npos {
+                                visible(pos, light - opaq_sum1);
+                            } else if last2 == npos {
+                                visible(pos, light - opaq_sum2);
+                            }
+                        }
                 return;
             }
 
