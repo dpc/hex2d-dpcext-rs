@@ -223,6 +223,49 @@ pub mod los2 {
     use std::collections::HashSet;
     use std::hash;
     use std::ops::{Add};
+    use std::cmp;
+
+    fn los_check_line<FOpaqueness, I=u32>(
+        opaqueness : &FOpaqueness,
+        light: I,
+        start : Coordinate<I>,
+        pos : Coordinate<I>,
+        dir : Direction,
+        ) -> (bool, I)
+        where
+        I : hex2d::Integer,
+        I : hash::Hash+Eq,
+        for <'a> &'a I: Add<&'a I, Output = I>,
+        FOpaqueness : Fn(Coordinate<I>) -> I,
+    {
+
+        let mut opaq_sum1 : I = FromPrimitive::from_i8(0).unwrap();
+        let mut last1 = start;
+
+        let mut opaq_sum2 : I = FromPrimitive::from_i8(0).unwrap();
+        let mut last2 = start;
+
+        for &(c1, c2) in start.line_to_with_edge_detection(pos).iter() {
+            if opaq_sum1 < light {
+                let opaq1 = opaqueness(c1);
+                opaq_sum1 = opaq_sum1 + opaq1;
+                last1 = c1;
+            }
+
+            if opaq_sum2 < light {
+                let opaq2 = opaqueness(c2);
+                opaq_sum2 = opaq_sum2 + opaq2;
+                last2 = c2;
+            }
+        };
+
+        match (last1 == pos, last2 == pos) {
+            (true, true) => (true, light - cmp::min(opaq_sum1, opaq_sum2)),
+            (true, false) => (true, light - opaq_sum1),
+            (false, true) => (true, light - opaq_sum2),
+            (false, false) => (false, light - light),
+        }
+    }
 
     fn los_rec<FOpaqueness, FVisible, I=i32>(
         opaqueness : &FOpaqueness,
@@ -245,68 +288,31 @@ pub mod los2 {
                 visited.insert(pos);
             }
 
-            let mut opaq_sum1 : I = FromPrimitive::from_i8(0).unwrap();
-            let mut last1 = start;
+            let (directly_visible, v_light) = los_check_line(
+                opaqueness,
+                light,
+                start,
+                pos,
+                dir);
 
-            let mut opaq_sum2 : I = FromPrimitive::from_i8(0).unwrap();
-            let mut last2 = start;
-
-            let mut directly_visible = false;
-            for &(c1, c2) in start.line_to_with_edge_detection(pos).iter() {
-                if opaq_sum1 < light {
-                    let opaq1 = opaqueness(c1);
-                    opaq_sum1 = opaq_sum1 + opaq1;
-                    last1 = c1;
-                }
-
-                if opaq_sum2 < light {
-                    let opaq2 = opaqueness(c2);
-                    opaq_sum2 = opaq_sum2 + opaq2;
-                    last2 = c2;
-                }
-            };
-
-            if last1 == pos {
-                visible(pos, light - opaq_sum1);
-                directly_visible = true;
-            } else if  last2 == pos {
-                visible(pos, light - opaq_sum2);
-                directly_visible = true;
-            }
-
-            if !directly_visible {
-
+            if directly_visible {
+                visible(pos, v_light);
+            } else {
                 let dir_to = start.direction_to_cw(pos).unwrap_or(dir);
                 let neighbors = vec!(Left, Right);
                 for npos in neighbors.iter()
                     .map(|&rd| dir_to + rd)
                         .map(|dir| pos + dir) {
 
-                            let mut opaq_sum1 : I = FromPrimitive::from_i8(0).unwrap();
-                            let mut last1 = start;
+                            let (side_visible, v_light) = los_check_line(
+                                opaqueness,
+                                light,
+                                start,
+                                npos,
+                                dir);
 
-                            let mut opaq_sum2 : I = FromPrimitive::from_i8(0).unwrap();
-                            let mut last2 = start;
-
-
-                            for &(c1, c2) in start.line_to_with_edge_detection(npos).iter() {
-                                if opaq_sum1 < light {
-                                    let opaq1 = opaqueness(c1);
-                                    opaq_sum1 = opaq_sum1 + opaq1;
-                                    last1 = c1;
-                                }
-
-                                if opaq_sum2 < light {
-                                    let opaq2 = opaqueness(c2);
-                                    opaq_sum2 = opaq_sum2 + opaq2;
-                                    last2 = c2;
-                                }
-                            };
-
-                            if last1 == npos {
-                                visible(pos, light - opaq_sum1);
-                            } else if last2 == npos {
-                                visible(pos, light - opaq_sum2);
+                            if side_visible {
+                                visible(pos, v_light);
                             }
                         }
                 return;
