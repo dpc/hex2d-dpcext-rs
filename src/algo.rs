@@ -230,7 +230,6 @@ pub mod los2 {
         light: I,
         start : Coordinate<I>,
         pos : Coordinate<I>,
-        dir : Direction,
         ) -> (bool, I)
         where
         I : hex2d::Integer,
@@ -292,8 +291,7 @@ pub mod los2 {
                 opaqueness,
                 light,
                 start,
-                pos,
-                dir);
+                pos);
 
             if directly_visible {
                 visible(pos, v_light);
@@ -308,8 +306,7 @@ pub mod los2 {
                                 opaqueness,
                                 light,
                                 start,
-                                npos,
-                                dir);
+                                npos,);
 
                             if side_visible {
                                 visible(pos, v_light);
