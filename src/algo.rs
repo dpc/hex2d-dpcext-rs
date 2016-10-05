@@ -134,7 +134,7 @@ pub mod los {
     use hex2d::Direction;
     use hex2d::Coordinate;
 
-    fn los_rec<FOpaqueness, FVisible, I=i32>(
+    fn los_rec<FOpaqueness, FVisible, I>(
         opaqueness : &FOpaqueness,
         visible : &mut FVisible,
         light: I,
@@ -196,7 +196,7 @@ pub mod los {
     /// by `opaqueness` will be subtracted from `light` to check if the LoS should finish due to
     /// "lack of visibility". `opaqueness` should typically return 1 for fully transparent
     /// Coordinates, and anything bigger than initial `light` for fully opaque Coordinates.
-    pub fn los<FOpaqueness, FVisible, I=i32>(
+    pub fn los<FOpaqueness, FVisible, I>(
         opaqueness : &FOpaqueness,
         visible : &mut FVisible,
         light: I,
@@ -225,7 +225,7 @@ pub mod los2 {
     use std::ops::{Add};
     use std::cmp;
 
-    fn los_check_line<FOpaqueness, I=u32>(
+    fn los_check_line<FOpaqueness, I>(
         opaqueness : &FOpaqueness,
         light: I,
         start : Coordinate<I>,
@@ -266,7 +266,7 @@ pub mod los2 {
         }
     }
 
-    fn los_rec<FOpaqueness, FVisible, I=i32>(
+    fn los_rec<FOpaqueness, FVisible, I>(
         opaqueness : &FOpaqueness,
         visible : &mut FVisible,
         light: I,
@@ -332,7 +332,7 @@ pub mod los2 {
     /// by `opaqueness` will be subtracted from `light` to check if the LoS should finish due to
     /// "lack of visibility". `opaqueness` should typically return 1 for fully transparent
     /// Coordinates, and anything bigger than initial `light` for fully opaque Coordinates.
-    pub fn los<FOpaqueness, FVisible, I=i32>(
+    pub fn los<FOpaqueness, FVisible, I>(
         opaqueness : &FOpaqueness,
         visible : &mut FVisible,
         light: I,
