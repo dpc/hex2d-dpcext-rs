@@ -36,6 +36,7 @@ pub mod bfs {
     impl<FCanPass, FIsDest, I> Traverser<FCanPass, FIsDest, I> where
         I : hex2d::Integer,
         I : hash::Hash,
+        I : std::ops::AddAssign,
         FCanPass : Fn(Coordinate<I>) -> bool,
         FIsDest : Fn(Coordinate<I>) -> bool
     {
@@ -145,6 +146,7 @@ pub mod los {
         pdir : Option<Direction>,
     ) where
         I : hex2d::Integer,
+        I : std::ops::AddAssign,
         FOpaqueness : Fn(Coordinate<I>) -> I,
         FVisible : FnMut(Coordinate<I>, I)
         {
@@ -204,6 +206,7 @@ pub mod los {
         dirs : &[Direction],
     ) where
         I : hex2d::Integer,
+        I : std::ops::AddAssign,
         FOpaqueness : Fn(Coordinate<I>) -> I,
         FVisible : FnMut(Coordinate<I>, I)
         {
@@ -234,8 +237,9 @@ pub mod los2 {
         where
         I : hex2d::Integer,
         I : hash::Hash+Eq,
+        I : std::ops::AddAssign,
         for <'a> &'a I: Add<&'a I, Output = I>,
-        FOpaqueness : Fn(Coordinate<I>) -> I,
+        FOpaqueness : Fn(Coordinate<I>) -> I
     {
 
         let mut opaq_sum1 : I = FromPrimitive::from_i8(0).unwrap();
@@ -244,7 +248,7 @@ pub mod los2 {
         let mut opaq_sum2 : I = FromPrimitive::from_i8(0).unwrap();
         let mut last2 = start;
 
-        for &(c1, c2) in start.line_to_with_edge_detection(pos).iter() {
+        for (c1, c2) in start.line_to_with_edge_detection_iter(pos) {
             if opaq_sum1 < light {
                 let opaq1 = opaqueness(c1);
                 opaq_sum1 = opaq_sum1 + opaq1;
@@ -277,6 +281,7 @@ pub mod los2 {
     ) where
         I : hex2d::Integer,
         I : hash::Hash+Eq,
+        I : std::ops::AddAssign,
         for <'a> &'a I: Add<&'a I, Output = I>,
         FOpaqueness : Fn(Coordinate<I>) -> I,
         FVisible : FnMut(Coordinate<I>, I)
@@ -341,6 +346,7 @@ pub mod los2 {
     ) where
         I : hex2d::Integer,
         I : hash::Hash,
+        I : std::ops::AddAssign,
         for <'a> &'a I: Add<&'a I, Output = I>,
         FOpaqueness : Fn(Coordinate<I>) -> I,
         FVisible : FnMut(Coordinate<I>, I)
